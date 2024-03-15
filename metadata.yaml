@@ -1,5 +1,5 @@
 homepage: "https://www.consentmo.com/"
 documentation: "https://support.consentmo.com/"
 versions:
-  - sha: 8cd0edf36d2e6c43473868dd3fb493f6213d5e42
+  - sha: 8d0db55c28a3c0f5a8bd8ae46231bfdadf013d16
     changeNotes: Initial release.
