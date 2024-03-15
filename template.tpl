@@ -1,4 +1,4 @@
-___TERMS_OF_SERVICE___
+﻿___TERMS_OF_SERVICE___
 
 By creating or modifying this file you agree to Google Tag Manager's Community
 Template Gallery Developer Terms of Service available at
@@ -198,8 +198,9 @@ const main = (settings) => {
   gtagSet('url_passthrough', settings.urlPassthrough);
 
   const consentState = getConsentValues();
+  let initConsentUpdated = false;
   if (consentState) {
-    log('GTM CMP :: consent update per cookies value : ', consentState);
+    initConsentUpdated = true;
     onUserConsent({
       security_storage: consentState.security,
       ad_storage: consentState.marketing,
@@ -211,7 +212,7 @@ const main = (settings) => {
     });
   }
 
-  callInWindow('gtmConsentmoCmp', onUserConsent);
+  callInWindow('gtmConsentmoCmp', onUserConsent, initConsentUpdated);
 };
 
 main(settings);
