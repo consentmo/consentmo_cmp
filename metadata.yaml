@@ -1,0 +1,5 @@
+homepage: "https://www.consentmo.com/"
+documentation: "https://support.consentmo.com/"
+versions:
+  - sha: ...
+    changeNotes: Initial release.
