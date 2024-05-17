@@ -110,7 +110,7 @@ ___TEMPLATE_PARAMETERS___
         "displayName": "Wait for update",
         "simpleValueType": true,
         "defaultValue": 1000,
-        "help": "Set how many milliseconds to wait before GTM \"firing tags\" waiting the Default Consent State updated with the GDPR Preferences. Minimum value: 100",
+        "help": "Set how many milliseconds to wait before GTM \"firing tags\" waiting the Default Consent State updated with the GDPR Preferences.",
         "valueValidators": [
           {
             "type": "NON_EMPTY"
