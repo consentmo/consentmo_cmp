@@ -1,5 +1,5 @@
 homepage: "https://www.consentmo.com/"
 documentation: "https://support.consentmo.com/"
 versions:
-  - sha: 8d0db55c28a3c0f5a8bd8ae46231bfdadf013d16
-    changeNotes: Initial release.
+  - sha: 4af72e7706ac7dfb150f3d27ecb94a610e94c444
+    changeNotes: Added validation for minimum wait_for_update.
