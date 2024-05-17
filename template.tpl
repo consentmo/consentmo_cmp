@@ -110,13 +110,22 @@ ___TEMPLATE_PARAMETERS___
         "displayName": "Wait for update",
         "simpleValueType": true,
         "defaultValue": 1000,
-        "help": "Set how many milliseconds to wait before GTM \"firing tags\" waiting the Default Consent State updated with the GDPR Preferences.",
+        "help": "Set how many milliseconds to wait before GTM \"firing tags\" waiting the Default Consent State updated with the GDPR Preferences. Minimum value: 100",
         "valueValidators": [
           {
             "type": "NON_EMPTY"
           },
           {
-            "type": "NON_NEGATIVE_NUMBER"
+            "type": "POSITIVE_NUMBER",
+            "enablingConditions": []
+          },
+          {
+            "type": "STRING_LENGTH",
+            "args": [
+              3,
+              4
+            ],
+            "errorMessage": "Minimum value must be 100"
           }
         ],
         "valueHint": "1000",
