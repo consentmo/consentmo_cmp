@@ -171,6 +171,7 @@ const settings = {
   waitforUpdate: makeNumber(data.waitForUpdate),
   adsDataRedaction: data.adsDataRedaction || false,
   urlPassthrough: data.urlPassthrough || false,
+  regionSettings: data.regionSettings,
 };
 
 const getConsentValues = () => {
@@ -191,7 +192,23 @@ const onUserConsent = (consent) => {
   updateConsentState(consent);
 };
 
+const splitInput = (input) => { return input.split(',').map(entry => entry.trim()).filter(entry => entry.length !== 0); };
+
 const main = (settings) => {
+   if(settings.regionSettings) {
+    settings.regionSettings.forEach(settings => {
+      let countries = splitInput(settings.region);
+      let store = settings.storageType;
+      if(settings.status != 'granted' && settings.status != 'denied'){settings.status = 'denied';}
+      if(store == 'ad_storage'){setDefaultConsentState({ 'ad_storage': settings.status, 'region': countries });}
+      else if(store == 'ad_personalization'){setDefaultConsentState({ 'ad_personalization': settings.status, 'region': countries });}
+      else if(store == 'ad_user_data'){setDefaultConsentState({ 'ad_user_data': settings.status, 'region': countries });}
+      else if(store == 'analytics_storage'){setDefaultConsentState({ 'analytics_storage': settings.status, 'region': countries });}
+      else if(store == 'functionality_storage'){setDefaultConsentState({ 'functionality_storage': settings.status, 'region': countries });}
+      else if(store == 'personalization_storage'){setDefaultConsentState({ 'personalization_storage': settings.status, 'region': countries });}
+    });
+  }
+  
   setDefaultConsentState({
     security_storage: settings.security,
     ad_storage: settings.marketing,
