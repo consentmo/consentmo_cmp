@@ -149,6 +149,67 @@ ___TEMPLATE_PARAMETERS___
         "alwaysInSummary": true
       }
     ]
+  },
+  {
+    "type": "SIMPLE_TABLE",
+    "name": "regionSettings",
+    "displayName": "Regional settings (override default settings)",
+    "simpleTableColumns": [
+      {
+        "defaultValue": "",
+        "displayName": "Region (country codes, e.g. \"DE\" or \"IT,ES,FR\")",
+        "name": "region",
+        "type": "TEXT"
+      },
+      {
+        "defaultValue": "",
+        "displayName": "Setting",
+        "name": "storageType",
+        "type": "SELECT",
+        "selectItems": [
+          {
+            "value": "analytics_storage",
+            "displayValue": "Analytics Cookies"
+          },
+          {
+            "value": "ad_storage",
+            "displayValue": "Advertising Cookies"
+          },
+          {
+            "value": "personalization_storage",
+            "displayValue": "Personalization Cookies"
+          },
+          {
+            "value": "functionality_storage",
+            "displayValue": "Functional Cookies"
+          },
+          {
+            "value": "ad_user_data",
+            "displayValue": "Ad user data"
+          },
+          {
+            "value": "ad_personalization",
+            "displayValue": "Ad personalization"
+          }
+        ]
+      },
+      {
+        "defaultValue": "",
+        "displayName": "Status",
+        "name": "status",
+        "type": "SELECT",
+        "selectItems": [
+          {
+            "value": "granted",
+            "displayValue": "Granted"
+          },
+          {
+            "value": "denied",
+            "displayValue": "Denied"
+          }
+        ]
+      }
+    ]
   }
 ]
 
