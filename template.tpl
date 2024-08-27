@@ -149,6 +149,67 @@ ___TEMPLATE_PARAMETERS___
         "alwaysInSummary": true
       }
     ]
+  },
+  {
+    "type": "SIMPLE_TABLE",
+    "name": "regionSettings",
+    "displayName": "Regional settings (override default settings)",
+    "simpleTableColumns": [
+      {
+        "defaultValue": "",
+        "displayName": "Region (country codes, e.g. \"DE\" or \"IT,ES,FR\")",
+        "name": "region",
+        "type": "TEXT"
+      },
+      {
+        "defaultValue": "",
+        "displayName": "Setting",
+        "name": "storageType",
+        "type": "SELECT",
+        "selectItems": [
+          {
+            "value": "analytics_storage",
+            "displayValue": "Analytics Cookies"
+          },
+          {
+            "value": "ad_storage",
+            "displayValue": "Advertising Cookies"
+          },
+          {
+            "value": "personalization_storage",
+            "displayValue": "Personalization Cookies"
+          },
+          {
+            "value": "functionality_storage",
+            "displayValue": "Functional Cookies"
+          },
+          {
+            "value": "ad_user_data",
+            "displayValue": "Ad user data"
+          },
+          {
+            "value": "ad_personalization",
+            "displayValue": "Ad personalization"
+          }
+        ]
+      },
+      {
+        "defaultValue": "",
+        "displayName": "Status",
+        "name": "status",
+        "type": "SELECT",
+        "selectItems": [
+          {
+            "value": "granted",
+            "displayValue": "Granted"
+          },
+          {
+            "value": "denied",
+            "displayValue": "Denied"
+          }
+        ]
+      }
+    ]
   }
 ]
 
@@ -171,6 +232,7 @@ const settings = {
   waitforUpdate: makeNumber(data.waitForUpdate),
   adsDataRedaction: data.adsDataRedaction || false,
   urlPassthrough: data.urlPassthrough || false,
+  regionSettings: data.regionSettings,
 };
 
 const getConsentValues = () => {
@@ -191,7 +253,23 @@ const onUserConsent = (consent) => {
   updateConsentState(consent);
 };
 
+const splitInput = (input) => { return input.split(',').map(entry => entry.trim()).filter(entry => entry.length !== 0); };
+
 const main = (settings) => {
+   if(settings.regionSettings) {
+    settings.regionSettings.forEach(settings => {
+      let countries = splitInput(settings.region);
+      let store = settings.storageType;
+      if(settings.status != 'granted' && settings.status != 'denied'){settings.status = 'denied';}
+      if(store == 'ad_storage'){setDefaultConsentState({ 'ad_storage': settings.status, 'region': countries });}
+      else if(store == 'ad_personalization'){setDefaultConsentState({ 'ad_personalization': settings.status, 'region': countries });}
+      else if(store == 'ad_user_data'){setDefaultConsentState({ 'ad_user_data': settings.status, 'region': countries });}
+      else if(store == 'analytics_storage'){setDefaultConsentState({ 'analytics_storage': settings.status, 'region': countries });}
+      else if(store == 'functionality_storage'){setDefaultConsentState({ 'functionality_storage': settings.status, 'region': countries });}
+      else if(store == 'personalization_storage'){setDefaultConsentState({ 'personalization_storage': settings.status, 'region': countries });}
+    });
+  }
+  
   setDefaultConsentState({
     security_storage: settings.security,
     ad_storage: settings.marketing,
