@@ -219,11 +219,9 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 const log = require('logToConsole');
 const setDefaultConsentState = require('setDefaultConsentState');
 const updateConsentState = require('updateConsentState');
-const getCookieValues = require('getCookieValues');
 const callInWindow = require('callInWindow');
 const gtagSet = require('gtagSet');
 const makeNumber = require('makeNumber');
-const COOKIE_NAME = 'cookieconsent_preferences_disabled';
 const settings = {
   security: 'granted',
   analytics: data.analytics,
@@ -235,22 +233,10 @@ const settings = {
   regionSettings: data.regionSettings,
 };
 
-const getConsentValues = () => {
-  let consentDisabled = getCookieValues(COOKIE_NAME)[0];
-  if (typeof consentDisabled === 'undefined') {
-    return false;
+const onUserConsent = (consent, outOfRegion, isConsentProvided) => {
+  if(isConsentProvided || outOfRegion) {
+    updateConsentState(consent);
   }
-
-  return {
-    security: 'granted',
-    analytics: consentDisabled.indexOf('analytics') >= 0 ? 'denied' : 'granted',
-    marketing: consentDisabled.indexOf('marketing') >= 0 ? 'denied' : 'granted',
-    functionality: consentDisabled.indexOf('functionality') >= 0 ? 'denied' : 'granted',
-  };
-};
-
-const onUserConsent = (consent) => {
-  updateConsentState(consent);
 };
 
 const splitInput = (input) => { return input.split(',').map(entry => entry.trim()).filter(entry => entry.length !== 0); };
@@ -269,7 +255,7 @@ const main = (settings) => {
       else if(store == 'personalization_storage'){setDefaultConsentState({ 'personalization_storage': settings.status, 'region': countries });}
     });
   }
-  
+
   setDefaultConsentState({
     security_storage: settings.security,
     ad_storage: settings.marketing,
@@ -284,22 +270,7 @@ const main = (settings) => {
   gtagSet('ads_data_redaction', settings.adsDataRedaction);
   gtagSet('url_passthrough', settings.urlPassthrough);
 
-  const consentState = getConsentValues();
-  let initConsentUpdated = false;
-  if (consentState) {
-    initConsentUpdated = true;
-    onUserConsent({
-      security_storage: consentState.security,
-      ad_storage: consentState.marketing,
-      ad_personalization: consentState.marketing,
-      ad_user_data: consentState.marketing,
-      analytics_storage: consentState.analytics,
-      functionality_storage: consentState.functionality,
-      personalization_storage: consentState.functionality,
-    });
-  }
-
-  callInWindow('gtmConsentmoCmp', onUserConsent, initConsentUpdated);
+  callInWindow('gtmConsentmoCmp', onUserConsent);
 };
 
 main(settings);
@@ -659,39 +630,6 @@ ___WEB_PERMISSIONS___
                     "boolean": true
                   }
                 ]
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": true
-  },
-  {
-    "instance": {
-      "key": {
-        "publicId": "get_cookies",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "cookieAccess",
-          "value": {
-            "type": 1,
-            "string": "specific"
-          }
-        },
-        {
-          "key": "cookieNames",
-          "value": {
-            "type": 2,
-            "listItem": [
-              {
-                "type": 1,
-                "string": "cookieconsent_preferences_disabled"
               }
             ]
           }
