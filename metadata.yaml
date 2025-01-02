@@ -2,9 +2,11 @@ homepage: "https://www.consentmo.com/"
 documentation: "https://support.consentmo.com/en/article/how-to-set-the-google-tag-manager-template-for-consentmo-gdpr-cmp-zlmfpg/"
 versions:
   # Latest version
+  - sha: a5b095a669d22486f07cad1b5f6153cc080503cb
+    changeNotes: Consent setting being handled by Consentmo's cookie bar script via onUserConsent
+  # Older version
   - sha: 3cfb94e78fd82885d8b3366ba68846f6a696a05e
     changeNotes: Add the option to set a specific initial consent for specific regions.
-  # Older version
   - sha: 86d6636aca7aec4a842162b9fb45822e0798fcc3
     changeNotes: Update documentation link.
   - sha: 8d0db55c28a3c0f5a8bd8ae46231bfdadf013d16
