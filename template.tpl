@@ -34,6 +34,25 @@ ___TEMPLATE_PARAMETERS___
 
 [
   {
+    "type": "SELECT",
+    "name": "setDefaultConsent",
+    "displayName": "Enable Default Consent?",
+    "selectItems": [
+      {
+        "value": 1,
+        "displayValue": "Yes"
+      },
+      {
+        "value": 0,
+        "displayValue": "No"
+      }
+    ],
+    "simpleValueType": true,
+    "help": "Set default consent for all regions.",
+    "defaultValue": 1,
+    "alwaysInSummary": true
+  },
+  {
     "type": "GROUP",
     "name": "consentDefault",
     "displayName": "Default Consent State",
@@ -96,6 +115,13 @@ ___TEMPLATE_PARAMETERS___
         "defaultValue": "denied",
         "help": "functionality_storage, personalization_storage"
       }
+    ],
+    "enablingConditions": [
+      {
+        "paramName": "setDefaultConsent",
+        "paramValue": 1,
+        "type": "EQUALS"
+      }
     ]
   },
   {
@@ -147,6 +173,13 @@ ___TEMPLATE_PARAMETERS___
         "simpleValueType": true,
         "help": "When URL passthrough is enabled and marketing or analytics is denied a few query parameters may be appended to links as users navigate through pages on your website.",
         "alwaysInSummary": true
+      }
+    ],
+    "enablingConditions": [
+      {
+        "paramName": "setDefaultConsent",
+        "paramValue": 1,
+        "type": "EQUALS"
       }
     ]
   },
@@ -223,6 +256,7 @@ const callInWindow = require('callInWindow');
 const gtagSet = require('gtagSet');
 const makeNumber = require('makeNumber');
 const settings = {
+  setDefaultConsent: data.setDefaultConsent !== undefined ? (data.setDefaultConsent || false) : true,
   security: 'granted',
   analytics: data.analytics,
   marketing: data.marketing,
@@ -233,8 +267,12 @@ const settings = {
   regionSettings: data.regionSettings,
 };
 
+let isInitDefaultConsent = !settings.setDefaultConsent;
 const onUserConsent = (consent, outOfRegion, isConsentProvided) => {
-  if(isConsentProvided || outOfRegion) {
+  if (isInitDefaultConsent) {
+    setDefaultConsentState(consent);
+    isInitDefaultConsent = false;
+  } else {
     updateConsentState(consent);
   }
 };
@@ -256,19 +294,21 @@ const main = (settings) => {
     });
   }
 
-  setDefaultConsentState({
-    security_storage: settings.security,
-    ad_storage: settings.marketing,
-    ad_personalization: settings.marketing,
-    ad_user_data: settings.marketing,
-    analytics_storage: settings.analytics,
-    functionality_storage: settings.functionality,
-    personalization_storage: settings.functionality,
-    wait_for_update: settings.waitforUpdate
-  });
+  if (settings.setDefaultConsent) {
+    setDefaultConsentState({
+      security_storage: settings.security,
+      ad_storage: settings.marketing,
+      ad_personalization: settings.marketing,
+      ad_user_data: settings.marketing,
+      analytics_storage: settings.analytics,
+      functionality_storage: settings.functionality,
+      personalization_storage: settings.functionality,
+      wait_for_update: settings.waitforUpdate
+    });
 
-  gtagSet('ads_data_redaction', settings.adsDataRedaction);
-  gtagSet('url_passthrough', settings.urlPassthrough);
+    gtagSet('ads_data_redaction', settings.adsDataRedaction);
+    gtagSet('url_passthrough', settings.urlPassthrough);
+  }
 
   callInWindow('gtmConsentmoCmp', onUserConsent);
 };
@@ -656,6 +696,9 @@ ___WEB_PERMISSIONS___
           }
         }
       ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
     },
     "isRequired": true
   }
