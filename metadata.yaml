@@ -2,9 +2,11 @@ homepage: "https://www.consentmo.com/"
 documentation: "https://support.consentmo.com/en/article/how-to-set-the-google-tag-manager-template-for-consentmo-gdpr-cmp-zlmfpg/"
 versions:
   # Latest version
+  - sha: c89210fb5ea2a71c6dd7595859b44556f21c9b68
+    changeNotes: Regard provided consent preferences if available as default consent
+  # Older version
   - sha: b18c8a4c36ba4012549f9a15583de68778bf98e5
     changeNotes: Add global option to enable/ disable the set Default Consent through GTM.
-  # Older version
   - sha: a5b095a669d22486f07cad1b5f6153cc080503cb
     changeNotes: Consent setting being handled by Consentmo's cookie bar script via onUserConsent.
   - sha: 3cfb94e78fd82885d8b3366ba68846f6a696a05e
