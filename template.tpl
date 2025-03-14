@@ -36,15 +36,15 @@ ___TEMPLATE_PARAMETERS___
   {
     "type": "SELECT",
     "name": "setDefaultConsent",
-    "displayName": "Enable Default Consent?",
+    "displayName": "Global Default Consent",
     "selectItems": [
       {
         "value": 1,
-        "displayValue": "Yes"
+        "displayValue": "Enabled"
       },
       {
         "value": 0,
-        "displayValue": "No"
+        "displayValue": "Disabled"
       }
     ],
     "simpleValueType": true,
@@ -252,9 +252,11 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 const log = require('logToConsole');
 const setDefaultConsentState = require('setDefaultConsentState');
 const updateConsentState = require('updateConsentState');
+const getCookieValues = require('getCookieValues');
 const callInWindow = require('callInWindow');
 const gtagSet = require('gtagSet');
 const makeNumber = require('makeNumber');
+const COOKIE_NAME = 'cookieconsent_preferences_disabled';
 const settings = {
   setDefaultConsent: data.setDefaultConsent !== undefined ? (data.setDefaultConsent || false) : true,
   security: 'granted',
@@ -265,6 +267,28 @@ const settings = {
   adsDataRedaction: data.adsDataRedaction || false,
   urlPassthrough: data.urlPassthrough || false,
   regionSettings: data.regionSettings,
+};
+
+const _getPreferencesCookie = (cookieName) => {
+  let consentDisabled = getCookieValues(cookieName)[0];
+  if (typeof consentDisabled === 'undefined') {
+    return false;
+  }
+  return consentDisabled;
+};
+
+const getConsentValues = () => {
+  let consentDisabled = _getPreferencesCookie(COOKIE_NAME);
+  if (!consentDisabled) {
+    return false;
+  }
+
+  return {
+    security: 'granted',
+    analytics: consentDisabled.indexOf('analytics') >= 0 ? 'denied' : 'granted',
+    marketing: consentDisabled.indexOf('marketing') >= 0 ? 'denied' : 'granted',
+    functionality: consentDisabled.indexOf('functionality') >= 0 ? 'denied' : 'granted',
+  };
 };
 
 let isInitDefaultConsent = !settings.setDefaultConsent;
@@ -280,7 +304,7 @@ const onUserConsent = (consent, outOfRegion, isConsentProvided) => {
 const splitInput = (input) => { return input.split(',').map(entry => entry.trim()).filter(entry => entry.length !== 0); };
 
 const main = (settings) => {
-   if(settings.regionSettings) {
+  if(settings.regionSettings) {
     settings.regionSettings.forEach(settings => {
       let countries = splitInput(settings.region);
       let store = settings.storageType;
@@ -294,17 +318,32 @@ const main = (settings) => {
     });
   }
 
+  const hasPreferencesCookie = _getPreferencesCookie(COOKIE_NAME);
+  
   if (settings.setDefaultConsent) {
-    setDefaultConsentState({
-      security_storage: settings.security,
-      ad_storage: settings.marketing,
-      ad_personalization: settings.marketing,
-      ad_user_data: settings.marketing,
-      analytics_storage: settings.analytics,
-      functionality_storage: settings.functionality,
-      personalization_storage: settings.functionality,
-      wait_for_update: settings.waitforUpdate
-    });
+    if (hasPreferencesCookie) {
+      const consentValues = getConsentValues();
+      setDefaultConsentState({
+        security_storage: consentValues.security,
+        ad_storage: consentValues.marketing,
+        ad_personalization: consentValues.marketing,
+        ad_user_data: consentValues.marketing,
+        analytics_storage: consentValues.analytics,
+        functionality_storage: consentValues.functionality,
+        personalization_storage: consentValues.functionality,
+      });
+    } else {
+      setDefaultConsentState({
+        security_storage: settings.security,
+        ad_storage: settings.marketing,
+        ad_personalization: settings.marketing,
+        ad_user_data: settings.marketing,
+        analytics_storage: settings.analytics,
+        functionality_storage: settings.functionality,
+        personalization_storage: settings.functionality,
+        wait_for_update: settings.waitforUpdate
+      });
+    }
 
     gtagSet('ads_data_redaction', settings.adsDataRedaction);
     gtagSet('url_passthrough', settings.urlPassthrough);
@@ -693,6 +732,39 @@ ___WEB_PERMISSIONS___
           "value": {
             "type": 1,
             "string": "debug"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "get_cookies",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "cookieAccess",
+          "value": {
+            "type": 1,
+            "string": "specific"
+          }
+        },
+        {
+          "key": "cookieNames",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 1,
+                "string": "cookieconsent_preferences_disabled"
+              }
+            ]
           }
         }
       ]
