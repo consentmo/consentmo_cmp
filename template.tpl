@@ -256,7 +256,8 @@ const getCookieValues = require('getCookieValues');
 const callInWindow = require('callInWindow');
 const gtagSet = require('gtagSet');
 const makeNumber = require('makeNumber');
-const COOKIE_NAME = 'cookieconsent_preferences_disabled';
+const cookieConsentStatus = 'cookieconsent_status';
+const cookieConsentDisabled = 'cookieconsent_preferences_disabled';
 const settings = {
   setDefaultConsent: data.setDefaultConsent !== undefined ? (data.setDefaultConsent || false) : true,
   security: 'granted',
@@ -269,26 +270,27 @@ const settings = {
   regionSettings: data.regionSettings,
 };
 
-const _getPreferencesCookie = (cookieName) => {
-  let consentDisabled = getCookieValues(cookieName)[0];
-  if (typeof consentDisabled === 'undefined') {
-    return false;
-  }
-  return consentDisabled;
+const _getCookie = (cookieName) => {
+  const values = getCookieValues(cookieName);
+  return values && values.length > 0 ? values[0] : '';
 };
 
 const getConsentValues = () => {
-  let consentDisabled = _getPreferencesCookie(COOKIE_NAME);
-  if (!consentDisabled) {
-    return false;
+  const consentDisabled = _getCookie(cookieConsentDisabled);
+  let consent = {
+    security: 'granted',
+    analytics: 'denied',
+    marketing: 'denied',
+    functionality: 'denied',
+  };
+
+  if (consentDisabled.length > 0) {
+    consent.analytics = consentDisabled.indexOf('analytics') >= 0 ? 'denied' : 'granted';
+    consent.marketing = consentDisabled.indexOf('marketing') >= 0 ? 'denied' : 'granted';
+    consent.functionality = consentDisabled.indexOf('functionality') >= 0 ? 'denied' : 'granted';
   }
 
-  return {
-    security: 'granted',
-    analytics: consentDisabled.indexOf('analytics') >= 0 ? 'denied' : 'granted',
-    marketing: consentDisabled.indexOf('marketing') >= 0 ? 'denied' : 'granted',
-    functionality: consentDisabled.indexOf('functionality') >= 0 ? 'denied' : 'granted',
-  };
+  return consent;
 };
 
 let isInitDefaultConsent = !settings.setDefaultConsent;
@@ -302,7 +304,6 @@ const onUserConsent = (consent, outOfRegion, isConsentProvided) => {
 };
 
 const splitInput = (input) => { return input.split(',').map(entry => entry.trim()).filter(entry => entry.length !== 0); };
-
 const main = (settings) => {
   if(settings.regionSettings) {
     settings.regionSettings.forEach(settings => {
@@ -318,10 +319,8 @@ const main = (settings) => {
     });
   }
 
-  const hasPreferencesCookie = _getPreferencesCookie(COOKIE_NAME);
-  
   if (settings.setDefaultConsent) {
-    if (hasPreferencesCookie) {
+    if (_getCookie(cookieConsentStatus).length > 0) {
       const consentValues = getConsentValues();
       setDefaultConsentState({
         security_storage: consentValues.security,
@@ -760,6 +759,10 @@ ___WEB_PERMISSIONS___
           "value": {
             "type": 2,
             "listItem": [
+              {
+                "type": 1,
+                "string": "cookieconsent_status"
+              },
               {
                 "type": 1,
                 "string": "cookieconsent_preferences_disabled"
