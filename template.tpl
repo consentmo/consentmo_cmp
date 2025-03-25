@@ -272,7 +272,7 @@ const settings = {
 
 const _getCookie = (cookieName) => {
   const values = getCookieValues(cookieName);
-  return values && values.length > 0 ? values[0] : '';
+  return values && values.length > 0 ? values[0] : undefined;
 };
 
 const getConsentValues = () => {
@@ -284,7 +284,7 @@ const getConsentValues = () => {
     functionality: 'denied',
   };
 
-  if (consentDisabled.length > 0) {
+  if (consentDisabled !== undefined) {
     consent.analytics = consentDisabled.indexOf('analytics') >= 0 ? 'denied' : 'granted';
     consent.marketing = consentDisabled.indexOf('marketing') >= 0 ? 'denied' : 'granted';
     consent.functionality = consentDisabled.indexOf('functionality') >= 0 ? 'denied' : 'granted';
@@ -320,7 +320,7 @@ const main = (settings) => {
   }
 
   if (settings.setDefaultConsent) {
-    if (_getCookie(cookieConsentStatus).length > 0) {
+    if (_getCookie(cookieConsentStatus) !== undefined) {
       const consentValues = getConsentValues();
       setDefaultConsentState({
         security_storage: consentValues.security,
