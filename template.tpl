@@ -114,22 +114,7 @@ ___TEMPLATE_PARAMETERS___
         "alwaysInSummary": true,
         "defaultValue": "denied",
         "help": "functionality_storage, personalization_storage"
-      }
-    ],
-    "enablingConditions": [
-      {
-        "paramName": "setDefaultConsent",
-        "paramValue": 1,
-        "type": "EQUALS"
-      }
-    ]
-  },
-  {
-    "type": "GROUP",
-    "name": "settings",
-    "displayName": "Consent Mode Settings",
-    "groupStyle": "NO_ZIPPY",
-    "subParams": [
+      },
       {
         "type": "TEXT",
         "name": "waitForUpdate",
@@ -157,7 +142,22 @@ ___TEMPLATE_PARAMETERS___
         "valueHint": "1000",
         "valueUnit": "milliseconds",
         "alwaysInSummary": true
-      },
+      }
+    ],
+    "enablingConditions": [
+      {
+        "paramName": "setDefaultConsent",
+        "paramValue": 1,
+        "type": "EQUALS"
+      }
+    ]
+  },
+  {
+    "type": "GROUP",
+    "name": "settings",
+    "displayName": "Options",
+    "groupStyle": "NO_ZIPPY",
+    "subParams": [
       {
         "type": "CHECKBOX",
         "name": "adsDataRedaction",
@@ -173,6 +173,14 @@ ___TEMPLATE_PARAMETERS___
         "simpleValueType": true,
         "help": "When URL passthrough is enabled and marketing or analytics is denied a few query parameters may be appended to links as users navigate through pages on your website.",
         "alwaysInSummary": true
+      },
+      {
+        "type": "CHECKBOX",
+        "name": "discardInitConsentSignal",
+        "checkboxText": "Discard Initial Consentmo GDPR Default Consent State",
+        "simpleValueType": true,
+        "help": "When enabled, this will ignore the default consent preferences set in the Consentmo GDPR app\u0027s Behaviour settings if the visitor hasn’t previously given consent. The default consent set here will be used instead.",
+        "alwaysInSummary": true
       }
     ],
     "enablingConditions": [
@@ -184,65 +192,74 @@ ___TEMPLATE_PARAMETERS___
     ]
   },
   {
-    "type": "SIMPLE_TABLE",
-    "name": "regionSettings",
-    "displayName": "Regional settings (override default settings)",
-    "simpleTableColumns": [
+    "type": "GROUP",
+    "name": "regionGroup",
+    "displayName": "Regions Settings",
+    "subParams": [
       {
-        "defaultValue": "",
-        "displayName": "Region (country codes, e.g. \"DE\" or \"IT,ES,FR\")",
-        "name": "region",
-        "type": "TEXT"
-      },
-      {
-        "defaultValue": "",
-        "displayName": "Setting",
-        "name": "storageType",
-        "type": "SELECT",
-        "selectItems": [
+        "type": "SIMPLE_TABLE",
+        "name": "regionSettings",
+        "displayName": "Override default settings per region in accordance with ISO 3166 codes. Use ISO 3166-1 alpha-2 country codes (e.g., \"BG\" for Bulgaria), or ISO 3166-2 for subregions (e.g., \"US-CA\" for California, United States). Multiple region identifiers can be specified, e.g., \"IT, ES, FR, BG, US-CA\".",
+        "simpleTableColumns": [
           {
-            "value": "analytics_storage",
-            "displayValue": "Analytics Cookies"
+            "defaultValue": "",
+            "displayName": "Region Code",
+            "name": "region",
+            "type": "TEXT"
           },
           {
-            "value": "ad_storage",
-            "displayValue": "Advertising Cookies"
+            "defaultValue": "",
+            "displayName": "Setting",
+            "name": "storageType",
+            "type": "SELECT",
+            "selectItems": [
+              {
+                "value": "analytics_storage",
+                "displayValue": "Analytics Cookies"
+              },
+              {
+                "value": "ad_storage",
+                "displayValue": "Advertising Cookies"
+              },
+              {
+                "value": "personalization_storage",
+                "displayValue": "Personalization Cookies"
+              },
+              {
+                "value": "functionality_storage",
+                "displayValue": "Functional Cookies"
+              },
+              {
+                "value": "ad_user_data",
+                "displayValue": "Ad user data"
+              },
+              {
+                "value": "ad_personalization",
+                "displayValue": "Ad personalization"
+              }
+            ]
           },
           {
-            "value": "personalization_storage",
-            "displayValue": "Personalization Cookies"
-          },
-          {
-            "value": "functionality_storage",
-            "displayValue": "Functional Cookies"
-          },
-          {
-            "value": "ad_user_data",
-            "displayValue": "Ad user data"
-          },
-          {
-            "value": "ad_personalization",
-            "displayValue": "Ad personalization"
+            "defaultValue": "",
+            "displayName": "Status",
+            "name": "status",
+            "type": "SELECT",
+            "selectItems": [
+              {
+                "value": "granted",
+                "displayValue": "Granted"
+              },
+              {
+                "value": "denied",
+                "displayValue": "Denied"
+              }
+            ]
           }
-        ]
-      },
-      {
-        "defaultValue": "",
-        "displayName": "Status",
-        "name": "status",
-        "type": "SELECT",
-        "selectItems": [
-          {
-            "value": "granted",
-            "displayValue": "Granted"
-          },
-          {
-            "value": "denied",
-            "displayValue": "Denied"
-          }
-        ]
+        ],
+        "alwaysInSummary": true
       }
-    ]
+    ],
+    "groupStyle": "NO_ZIPPY"
   }
 ]
 
@@ -267,6 +284,7 @@ const settings = {
   waitforUpdate: makeNumber(data.waitForUpdate),
   adsDataRedaction: data.adsDataRedaction || false,
   urlPassthrough: data.urlPassthrough || false,
+  discardInitConsentSignal: data.discardInitConsentSignal || false,
   regionSettings: data.regionSettings,
 };
 
@@ -299,7 +317,11 @@ const onUserConsent = (consent, outOfRegion, isConsentProvided) => {
     setDefaultConsentState(consent);
     isInitDefaultConsent = false;
   } else {
-    updateConsentState(consent);
+    if (!settings.discardInitConsentSignal) {
+      updateConsentState(consent);
+    } else if (settings.discardInitConsentSignal && isConsentProvided) {
+      updateConsentState(consent);
+    }
   }
 };
 
@@ -319,33 +341,34 @@ const main = (settings) => {
     });
   }
 
+
   if (settings.setDefaultConsent) {
-    if (_getCookie(cookieConsentStatus) !== undefined) {
-      const consentValues = getConsentValues();
-      setDefaultConsentState({
-        security_storage: consentValues.security,
-        ad_storage: consentValues.marketing,
-        ad_personalization: consentValues.marketing,
-        ad_user_data: consentValues.marketing,
-        analytics_storage: consentValues.analytics,
-        functionality_storage: consentValues.functionality,
-        personalization_storage: consentValues.functionality,
-      });
-    } else {
-      setDefaultConsentState({
-        security_storage: settings.security,
-        ad_storage: settings.marketing,
-        ad_personalization: settings.marketing,
-        ad_user_data: settings.marketing,
-        analytics_storage: settings.analytics,
-        functionality_storage: settings.functionality,
-        personalization_storage: settings.functionality,
-        wait_for_update: settings.waitforUpdate
-      });
-    }
+    setDefaultConsentState({
+      security_storage: settings.security,
+      ad_storage: settings.marketing,
+      ad_personalization: settings.marketing,
+      ad_user_data: settings.marketing,
+      analytics_storage: settings.analytics,
+      functionality_storage: settings.functionality,
+      personalization_storage: settings.functionality,
+      wait_for_update: settings.waitforUpdate
+    });
 
     gtagSet('ads_data_redaction', settings.adsDataRedaction);
     gtagSet('url_passthrough', settings.urlPassthrough);
+  }
+
+  if ((settings.regionSettings || settings.setDefaultConsent) && _getCookie(cookieConsentStatus) !== undefined) {
+    const consentValues = getConsentValues();
+    updateConsentState({
+      security_storage: consentValues.security,
+      ad_storage: consentValues.marketing,
+      ad_personalization: consentValues.marketing,
+      ad_user_data: consentValues.marketing,
+      analytics_storage: consentValues.analytics,
+      functionality_storage: consentValues.functionality,
+      personalization_storage: consentValues.functionality,
+    });
   }
 
   callInWindow('gtmConsentmoCmp', onUserConsent);
