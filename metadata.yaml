@@ -2,9 +2,11 @@ homepage: "https://www.consentmo.com/"
 documentation: "https://support.consentmo.com/en/article/how-to-set-the-google-tag-manager-template-for-consentmo-gdpr-cmp-zlmfpg/"
 versions:
   # Latest version
+  - sha: 0f010a2f121fe2dfad564a904829ef9204352d98
+    changeNotes: Add multi-region all categories option.
+  # Older version
   - sha: 2a528665cdcf8034bbc3686f9a3aca5c26091394
     changeNotes: Add option discard init consent signal.
-  # Older version
   - sha: 95bd71b8f8261532a102bc17c7537e49caba1dcc
     changeNotes: Fix consent status and preferences validation.
   - sha: bde9e5160ff86e415f38ab430debc33835ff5088
