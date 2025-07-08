@@ -208,11 +208,15 @@ ___TEMPLATE_PARAMETERS___
             "type": "TEXT"
           },
           {
-            "defaultValue": "",
+            "defaultValue": "all_storage",
             "displayName": "Setting",
             "name": "storageType",
             "type": "SELECT",
             "selectItems": [
+              {
+                "value": "all_storage",
+                "displayValue": "All categories"
+              },
               {
                 "value": "analytics_storage",
                 "displayValue": "Analytics Cookies"
@@ -327,17 +331,29 @@ const onUserConsent = (consent, outOfRegion, isConsentProvided) => {
 
 const splitInput = (input) => { return input.split(',').map(entry => entry.trim()).filter(entry => entry.length !== 0); };
 const main = (settings) => {
-  if(settings.regionSettings) {
+  if (settings.regionSettings) {
     settings.regionSettings.forEach(settings => {
       let countries = splitInput(settings.region);
-      let store = settings.storageType;
+      let storage = settings.storageType;
       if(settings.status != 'granted' && settings.status != 'denied'){settings.status = 'denied';}
-      if(store == 'ad_storage'){setDefaultConsentState({ 'ad_storage': settings.status, 'region': countries });}
-      else if(store == 'ad_personalization'){setDefaultConsentState({ 'ad_personalization': settings.status, 'region': countries });}
-      else if(store == 'ad_user_data'){setDefaultConsentState({ 'ad_user_data': settings.status, 'region': countries });}
-      else if(store == 'analytics_storage'){setDefaultConsentState({ 'analytics_storage': settings.status, 'region': countries });}
-      else if(store == 'functionality_storage'){setDefaultConsentState({ 'functionality_storage': settings.status, 'region': countries });}
-      else if(store == 'personalization_storage'){setDefaultConsentState({ 'personalization_storage': settings.status, 'region': countries });}
+      if (storage == 'all_storage') {
+        setDefaultConsentState({
+          'security_storage': settings.security,
+          'ad_storage': settings.status,
+          'ad_personalization': settings.status,
+          'ad_user_data': settings.status,
+          'analytics_storage': settings.status,
+          'functionality_storage': settings.status,
+          'personalization_storage': settings.status,
+          'region': countries,
+        });
+      }
+      else if(storage == 'ad_storage'){setDefaultConsentState({ 'ad_storage': settings.status, 'region': countries });}
+      else if(storage == 'ad_personalization'){setDefaultConsentState({ 'ad_personalization': settings.status, 'region': countries });}
+      else if(storage == 'ad_user_data'){setDefaultConsentState({ 'ad_user_data': settings.status, 'region': countries });}
+      else if(storage == 'analytics_storage'){setDefaultConsentState({ 'analytics_storage': settings.status, 'region': countries });}
+      else if(storage == 'functionality_storage'){setDefaultConsentState({ 'functionality_storage': settings.status, 'region': countries });}
+      else if(storage == 'personalization_storage'){setDefaultConsentState({ 'personalization_storage': settings.status, 'region': countries });}
     });
   }
 
