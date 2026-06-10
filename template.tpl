@@ -372,6 +372,7 @@ const main = (settings) => {
 
     gtagSet('ads_data_redaction', settings.adsDataRedaction);
     gtagSet('url_passthrough', settings.urlPassthrough);
+    gtagSet('developer_id.dNDdkZG', true);
   }
 
   if ((settings.regionSettings || settings.setDefaultConsent) && _getCookie(cookieConsentStatus) !== undefined) {
