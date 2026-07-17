@@ -270,6 +270,8 @@ ___TEMPLATE_PARAMETERS___
 
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
+const callLater = require('callLater');
+const getTimestampMillis = require('getTimestampMillis');
 const log = require('logToConsole');
 const setDefaultConsentState = require('setDefaultConsentState');
 const updateConsentState = require('updateConsentState');
@@ -388,7 +390,22 @@ const main = (settings) => {
     });
   }
 
-  callInWindow('gtmConsentmoCmp', onUserConsent);
+  // Poll until Consentmo defines gtmConsentmoCmp (Hydrogen / late load).
+  // callLater ≈ setTimeout(fn, 0) — no delay API in web GTM templates.
+  const startMs = getTimestampMillis();
+  const maxWaitMs = 5000; // 5 seconds
+  const tryRegister = () => {
+    if (copyFromWindow('gtmConsentmoCmp')) {
+      callInWindow('gtmConsentmoCmp', onUserConsent);
+      return;
+    }
+    if (getTimestampMillis() - startMs >= maxWaitMs) {
+      log('Consentmo CMP: gtmConsentmoCmp not available after timeout');
+      return;
+    }
+    callLater(tryRegister);
+  };
+  tryRegister();
 };
 
 main(settings);
@@ -437,7 +454,7 @@ ___WEB_PERMISSIONS___
                   },
                   {
                     "type": 8,
-                    "boolean": false
+                    "boolean": true
                   },
                   {
                     "type": 8,
