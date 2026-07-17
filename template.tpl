@@ -272,6 +272,7 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
 const callLater = require('callLater');
 const getTimestampMillis = require('getTimestampMillis');
+const copyFromWindow = require('copyFromWindow');
 const log = require('logToConsole');
 const setDefaultConsentState = require('setDefaultConsentState');
 const updateConsentState = require('updateConsentState');
