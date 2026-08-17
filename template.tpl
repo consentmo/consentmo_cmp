@@ -279,6 +279,7 @@ const gtagSet = require('gtagSet');
 const makeNumber = require('makeNumber');
 const cookieConsentStatus = 'cookieconsent_status';
 const cookieConsentDisabled = 'cookieconsent_preferences_disabled';
+const cookieConsentStatusMaxIndex = 50;
 const settings = {
   setDefaultConsent: data.setDefaultConsent !== undefined ? (data.setDefaultConsent || false) : true,
   security: 'granted',
@@ -295,6 +296,21 @@ const settings = {
 const _getCookie = (cookieName) => {
   const values = getCookieValues(cookieName);
   return values && values.length > 0 ? values[0] : undefined;
+};
+
+const _getConsentStatusCookie = () => {
+  let value = _getCookie(cookieConsentStatus);
+  let i = 1;
+  while (i <= cookieConsentStatusMaxIndex) {
+    const next = _getCookie(cookieConsentStatus + i);
+    if (next !== undefined) {
+      value = next;
+    } else if (value !== undefined) {
+      break;
+    }
+    i = i + 1;
+  }
+  return value;
 };
 
 const getConsentValues = () => {
@@ -375,7 +391,7 @@ const main = (settings) => {
     gtagSet('developer_id.dNDdkZG', true);
   }
 
-  if ((settings.regionSettings || settings.setDefaultConsent) && _getCookie(cookieConsentStatus) !== undefined) {
+  if ((settings.regionSettings || settings.setDefaultConsent) && _getConsentStatusCookie() !== undefined) {
     const consentValues = getConsentValues();
     updateConsentState({
       security_storage: consentValues.security,
@@ -795,23 +811,7 @@ ___WEB_PERMISSIONS___
           "key": "cookieAccess",
           "value": {
             "type": 1,
-            "string": "specific"
-          }
-        },
-        {
-          "key": "cookieNames",
-          "value": {
-            "type": 2,
-            "listItem": [
-              {
-                "type": 1,
-                "string": "cookieconsent_status"
-              },
-              {
-                "type": 1,
-                "string": "cookieconsent_preferences_disabled"
-              }
-            ]
+            "string": "any"
           }
         }
       ]
